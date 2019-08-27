@@ -19,8 +19,10 @@ clock = pygame.time.Clock()
 myfont = pygame.font.SysFont('Comic Sans MS', 30)
 textsurface = myfont.render('Hive:', False, (0, 0, 0))
 screen.blit(textsurface,(20,20))
-img_pot = pygame.image.load('C:/Users/Christoph/Codes/Dwarfs/honey.png')
-img_hive = pygame.image.load('C:/Users/Christoph/Codes/Dwarfs/hive.png')
+
+#-------------------SET PATH TO WHERE YOU HAVE SAVED THE FOLDER BEES---------------
+img_pot = pygame.image.load('C:/Users/Christoph/Codes/bees/honey.png')
+img_hive = pygame.image.load('C:/Users/Christoph/Codes/bees/hive.png')
 
 #myimage = pygame.image.load(os.path.join("honey.png"))
 #imagerect = myimage.get_rect()
