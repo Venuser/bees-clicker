@@ -4,6 +4,7 @@ import random
 import pygame.freetype
 import thorpy
 
+# this code is now tracked by git
 
 pygame.init()
 
