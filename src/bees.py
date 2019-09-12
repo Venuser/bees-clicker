@@ -3,7 +3,7 @@ from pygame.locals import *
 import random
 import pygame.freetype
 import thorpy
-
+import pygame.gfxdraw
 # this code is now tracked by git
 
 pygame.init()
@@ -25,8 +25,8 @@ screen.blit(textsurface,(20,20))
 
 #-------------------SET PATH TO WHERE YOU HAVE SAVED THE FOLDER BEES---------------
 #img_pot = pygame.image.load('C:/Users/Christoph/Codes/bees/honey.png')
-img_hive = pygame.image.load('C:/Users/Christoph/Codes/bees/hive.png')
-img_background = pygame.image.load('C:/Users/Christoph/Codes/bees/background.png')
+img_hive = pygame.image.load('C:/Users/Christoph/Codes/bees-clicker/src/hive.png')
+img_background = pygame.image.load('C:/Users/Christoph/Codes/bees-clicker/src/background.png')
 #myimage = pygame.image.load(os.path.join("honey.png"))
 #imagerect = myimage.get_rect()
 # set game variables
@@ -57,6 +57,8 @@ list_bee = []
 list_queen = []
 list_honeybee = []
 
+upgrade_visible = False
+shop_visible = False
 
 class bees():
     def __init__(self, color, x,y,width,height, text=''):
@@ -116,39 +118,15 @@ class button():
             
         return False
 
-class popup():
-    def __init__(self, color, x,y,width,height, text=''):
+
+class upgrade_screen():
+    def __init__(self, color, x,y,width,height, screen):
         self.color = color
         self.x = x 
         self.y = y 
         self.width = width
         self.height = height
-        self.text = text
-
-class upgrade_screen():
-    def upgrades():
-        screen = pygame.display.set_mode((800, 600))
-        run = True
-        while run:
-            screen.fill(white)
-            GAME_FONT.render_to(screen, (111, 111), 'tewsta:', (0, 0, 0))
-
-            pygame.display.flip()
-
-
-
-
-    def draw(self,win,outline=None):
-        #Call this method to draw the button on the screen
-        if outline:
-            pygame.draw.rect(win, outline, (self.x-2,self.y-2,self.width+4,self.height+4),0)
-            
-        pygame.draw.rect(win, self.color, (self.x,self.y,self.width,self.height),0)
-        
-        if self.text != '':
-            font = pygame.font.SysFont('comicsans', 60)
-            text = font.render(self.text, 1, (0,0,0))
-            win.blit(text, (self.x + (self.width/2 - text.get_width()/2), self.y + (self.height/2 - text.get_height()/2)))
+        self.screen = screen
 
     def isOver(self, pos):
         #Pos is the mouse position or a tuple of (x,y) coordinates
@@ -157,6 +135,25 @@ class upgrade_screen():
                 return True
             
         return False
+
+    def draw(self):
+        pygame.gfxdraw.box(screen, pygame.Rect(320,35,530,170), (255,155,0,127))
+        GAME_FONT.render_to(screen, (325, 50), 'Worker Bee: #', (0, 0, 0))
+        GAME_FONT.render_to(screen, (500, 50), honeybee, (0, 0, 0))
+        GAME_FONT.render_to(screen, (575, 50), 'Price:', (0, 0, 0))
+        GAME_FONT.render_to(screen, (650, 50), str(price_bee), (0, 0, 0))
+
+        GAME_FONT.render_to(screen, (325, 100), 'Queen Bee: #', (0, 0, 0))
+        GAME_FONT.render_to(screen, (500, 100), str(queen), (0, 0, 0))
+        GAME_FONT.render_to(screen, (575, 100), 'Price:', (0, 0, 0))
+        GAME_FONT.render_to(screen, (650, 100), str(price_queen), (0, 0, 0))
+
+
+        GAME_FONT.render_to(screen, (325, 150), 'Honey Bee: #', (0, 0, 0))
+        GAME_FONT.render_to(screen, (500, 150), str(honey_bee), (0, 0, 0))
+        GAME_FONT.render_to(screen, (575, 150), 'Price:', (0, 0, 0))
+        GAME_FONT.render_to(screen, (650, 150), str(price_honey_bee), (0, 0, 0))
+
 
 def my_alert_1():
     thorpy.launch_nonblocking_alert(title="This is a non-blocking alert!",
@@ -192,6 +189,7 @@ buy_queen = button((255,255,0), 750, 90, 40, 40, '+')
 buy_exp = button((255,255,0), 725, 540, 40, 40, '+')
 buy_honey_bee = button((255,255,0), 750, 140, 40, 40, '+')
 upgrade_button = button((255,255,0), 25, 550, 250, 40, 'Evolutions')
+shop_button = upgrade_screen((255,255,0), 455, 300, 80, 80, '')
 #main loop
 while running:
     time = pygame.time.get_ticks()
@@ -210,20 +208,18 @@ while running:
             if clicker.isOver(pos):
                 honey += 1
 
-
-
-            elif buy_bee.isOver(pos) and honey>=price_bee and hive<hive_size:
+            elif buy_bee.isOver(pos) and honey>=price_bee and hive<hive_size and shop_visible==True:
                 bee +=1 
                 hive += 1
                 list_bee.append(bees((255,255,0), 500 + random.randint(-40,40), 300 + random.randint(-40,40),2,2,''))
                 honey = honey - price_bee
-                price_bee += int(bee/2)
+                price_bee += int(price_bee/3)
 
             elif buy_hive.isOver(pos) and honey>=price_hive:
                 hive_size += 50
                 honey -= price_hive
                 price_hive += int(price_hive*hive_size/2)
-            elif buy_queen.isOver(pos) and honey>=price_queen and hive+5<hive_size:
+            elif buy_queen.isOver(pos) and honey>=price_queen and hive+5<hive_size and shop_visible==True:
                 queen += 1
                 hive += 5
                 honey -= price_queen
@@ -233,7 +229,7 @@ while running:
             elif buy_exp.isOver(pos) and honey>=price_exp:
                 exp += 1
                 honey -= price_exp
-            elif buy_honey_bee.isOver(pos) and honey>=price_honey_bee and hive+10<=hive_size:
+            elif buy_honey_bee.isOver(pos) and honey>=price_honey_bee and hive+10<=hive_size and shop_visible==True:
                 honey_bee += 1
                 hive += 10
                 honey -= price_honey_bee
@@ -241,9 +237,20 @@ while running:
                 list_honeybee.append(bees((255,255,0), 500 + random.randint(-40,40), 300 + random.randint(-40,40),8,8,''))
 
             elif upgrade_button.isOver(pos):
-                screen1 = upgrade_screen()
-                screen1.upgrades
+                if upgrade_visible == False:
+                     upgrade_visible = True
+                elif upgrade_visible == True:
+                     upgrade_visible = False
 
+            elif shop_button.isOver(pos):
+                if shop_visible == False:
+                    shop_visible = True
+                elif shop_visible == True:
+                    shop_visible = False
+
+              #      shop_visible = True
+               # if shop_visible == True:
+                #    shop_visible = False
 
        
 
@@ -288,13 +295,17 @@ while running:
     #draw buttons
     bees1.draw(screen,(0,0,0))
     #clicker.draw(screen,(0,0,0))
-    buy_bee.draw(screen,(0,0,0))
     buy_hive.draw(screen,(0,0,0))
-    buy_queen.draw(screen,(0,0,0))
-    buy_honey_bee.draw(screen,(0,0,0))
-    buy_exp.draw(screen,(0,0,0))
-    upgrade_button.draw(screen,(0,0,0))
 
+    if shop_visible == True:
+        buy_bee.draw(screen,(0,0,0))
+        buy_queen.draw(screen,(0,0,0))
+        buy_honey_bee.draw(screen,(0,0,0))
+
+    buy_exp.draw(screen,(0,0,0))
+    if level >= 1:
+        upgrade_button.draw(screen,(0,0,0))
+ #   shop_button.draw(screen,(0,0,0))
     #blit images
     #pip install thorpyl
    # screen.blit(img_pot,(90,100))    
@@ -316,21 +327,15 @@ while running:
     GAME_FONT.render_to(screen, (30, 450), 'HPS:', (0, 0, 0))
     GAME_FONT.render_to(screen, (130, 450), str(bee+10*queen+ 100*honey_bee), (0, 0, 0))
 
-    GAME_FONT.render_to(screen, (325, 50), 'Worker Bee: #', (0, 0, 0))
-    GAME_FONT.render_to(screen, (500, 50), honeybee, (0, 0, 0))
-    GAME_FONT.render_to(screen, (575, 50), 'Price:', (0, 0, 0))
-    GAME_FONT.render_to(screen, (650, 50), str(price_bee), (0, 0, 0))
+#   Bee-Shop
+    if shop_visible == True:
+        shop_button.draw()
+   
+    if upgrade_visible == True:
 
-    GAME_FONT.render_to(screen, (325, 100), 'Queen Bee: #', (0, 0, 0))
-    GAME_FONT.render_to(screen, (500, 100), str(queen), (0, 0, 0))
-    GAME_FONT.render_to(screen, (575, 100), 'Price:', (0, 0, 0))
-    GAME_FONT.render_to(screen, (650, 100), str(price_queen), (0, 0, 0))
+        pygame.gfxdraw.box(screen, pygame.Rect(5,80,300,350), (255,155,0,127))
+        GAME_FONT.render_to(screen, (44, 90), 'Hier upgrades:', (0, 0, 0))
 
-
-    GAME_FONT.render_to(screen, (325, 150), 'Honey Bee: #', (0, 0, 0))
-    GAME_FONT.render_to(screen, (500, 150), str(honey_bee), (0, 0, 0))
-    GAME_FONT.render_to(screen, (575, 150), 'Price:', (0, 0, 0))
-    GAME_FONT.render_to(screen, (650, 150), str(price_honey_bee), (0, 0, 0))
 
     GAME_FONT.render_to(screen, (400, 550), 'Level:', (0, 0, 0))
     GAME_FONT.render_to(screen, (475, 550), str(level), (0, 0, 0))
